@@ -1,5 +1,7 @@
 # Standalone Background Utility in Rust
 
+Status: superseded by [ADR 0004](0004-dotnet-avalonia-ports-and-adapters.md).
+
 We decided to build `bogopali` as a native standalone background utility written in Rust, using native operating system event hooks (Win32 keyboard hooks for Windows and CoreGraphics Event Taps for macOS).
 
 ## Context
