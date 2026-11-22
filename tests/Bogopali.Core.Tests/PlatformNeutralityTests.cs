@@ -12,7 +12,7 @@ public sealed class PlatformNeutralityTests
     {
         string[] nonFramework = s_core.GetReferencedAssemblies()
             .Select(reference => reference.Name ?? string.Empty)
-            .Where(name => name != "netstandard" && !name.StartsWith("System", StringComparison.Ordinal) && !name.StartsWith("Microsoft.Win32.Primitives", StringComparison.Ordinal))
+            .Where(name => name != "netstandard" && !name.StartsWith("System", StringComparison.Ordinal))
             .ToArray();
 
         Assert.Empty(nonFramework);

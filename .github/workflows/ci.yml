@@ -1,7 +1,10 @@
 name: CI
 
 on:
+  # Feature branches are covered by pull_request; filtering push avoids running
+  # CI twice per PR commit. Both names are listed until #11 renames master.
   push:
+    branches: [main, master]
   pull_request:
 
 permissions:
