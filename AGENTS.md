@@ -4,6 +4,16 @@ Lightweight background utility for Windows (macOS later) that turns Telex-style
 sequences into Romanized Pāli with diacritics. See `GLOSSARY.md` for the domain
 language and `docs/adr/` for architectural decisions.
 
+## Build and test
+
+Requires the .NET 11 SDK (pinned in `global.json`). From the repository root:
+
+- `dotnet build bogopali.slnx` (warnings are errors; naming and analyzer rules fail the build)
+- `dotnet test --solution bogopali.slnx` (xUnit v3 on Microsoft.Testing.Platform)
+- `dotnet format bogopali.slnx --verify-no-changes`
+
+`src/Bogopali.Core` must stay platform-neutral (`net11.0`, no OS-specific APIs); CI runs its tests on Linux.
+
 ## Agent skills
 
 ### Issue tracker

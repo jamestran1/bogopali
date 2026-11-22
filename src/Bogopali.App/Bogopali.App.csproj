@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Avalonia tray application: wires the Windows adapter to the Core. -->
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net11.0-windows</TargetFramework>
+    <RootNamespace>Bogopali.App</RootNamespace>
+    <AssemblyName>bogopali</AssemblyName>
+    <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Avalonia" />
+    <PackageReference Include="Avalonia.Desktop" />
+    <PackageReference Include="Avalonia.Themes.Fluent" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Bogopali.Core\Bogopali.Core.csproj" />
+    <ProjectReference Include="..\Bogopali.Windows\Bogopali.Windows.csproj" />
+  </ItemGroup>
+
+</Project>

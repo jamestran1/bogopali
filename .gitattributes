@@ -1,0 +1,9 @@
+# Normalize text files to LF in the repository and the working tree, matching
+# end_of_line in .editorconfig so `dotnet format` agrees on every platform.
+* text=auto eol=lf
+
+*.cmd text eol=crlf
+*.bat text eol=crlf
+
+*.png binary
+*.ico binary
