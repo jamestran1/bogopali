@@ -15,7 +15,7 @@
   <Identity Name="$PackageName$" Publisher="$Publisher$" Version="$Version$" ProcessorArchitecture="$Architecture$" />
 
   <Properties>
-    <DisplayName>bogopali</DisplayName>
+    <DisplayName>Pāli Key</DisplayName>
     <PublisherDisplayName>$PublisherDisplayName$</PublisherDisplayName>
     <Logo>Assets\StoreLogo.png</Logo>
     <Description>Type Romanized Pali with diacritics in any Windows application.</Description>
@@ -33,7 +33,7 @@
   <Applications>
     <Application Id="bogopali" Executable="bogopali.exe" EntryPoint="Windows.FullTrustApplication">
       <uap:VisualElements
-        DisplayName="bogopali"
+        DisplayName="Pāli Key"
         Description="Type Romanized Pali with diacritics in any Windows application."
         BackgroundColor="transparent"
         Square150x150Logo="Assets\Square150x150Logo.png"
@@ -41,7 +41,7 @@
       <Extensions>
         <!-- TaskId must match WindowsAutostart.StartupTaskId. -->
         <uap5:Extension Category="windows.startupTask" Executable="bogopali.exe" EntryPoint="Windows.FullTrustApplication">
-          <uap5:StartupTask TaskId="BogopaliStartup" Enabled="false" DisplayName="bogopali" />
+          <uap5:StartupTask TaskId="BogopaliStartup" Enabled="false" DisplayName="Pāli Key" />
         </uap5:Extension>
       </Extensions>
     </Application>

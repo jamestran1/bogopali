@@ -1,4 +1,4 @@
-# bogopali
+# Pāli Key (bogopali)
 
 A lightweight standalone background utility for Windows and macOS that turns Telex-style sequences into Romanized Pāli characters with diacritics, in any text field.
 
@@ -49,5 +49,5 @@ _Avoid_: Injection, Backspace-and-Send action, conversion
 ## Environment
 
 **Hook Conflict**:
-Contention that occurs when bogopali and another input utility (such as UniKey or EVKey) both capture global keyboard input at the same time.
+Contention that occurs when Pāli Key and another input utility (such as UniKey or EVKey) both capture global keyboard input at the same time.
 _Avoid_: Keyboard crash, hook clash

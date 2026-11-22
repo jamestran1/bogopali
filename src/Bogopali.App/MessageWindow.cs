@@ -10,7 +10,7 @@ internal sealed class MessageWindow : Window
 {
     public MessageWindow(string message, string? detail, string okText)
     {
-        Title = "bogopali";
+        Title = "Pāli Key";
         SizeToContent = SizeToContent.WidthAndHeight;
         CanResize = false;
         Topmost = true;
