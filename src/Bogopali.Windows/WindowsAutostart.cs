@@ -57,10 +57,13 @@ public static class WindowsAutostart
         private const string RunKey = @"Software\Microsoft\Windows\CurrentVersion\Run";
         private const string ApprovedKey = @"Software\Microsoft\Windows\CurrentVersion\Explorer\StartupApproved\Run";
 
+        private string Command { get; } = $"\"{executablePath}\"";
+
         public Task<AutostartState> GetStateAsync()
         {
             using RegistryKey? run = Registry.CurrentUser.OpenSubKey(RunKey);
-            if (run?.GetValue(ValueName) is not string)
+            // An entry for another path (the user moved the extracted folder) would not start this copy.
+            if (run?.GetValue(ValueName) is not string command || command != Command)
             {
                 return Task.FromResult(AutostartState.Disabled);
             }
@@ -74,7 +77,7 @@ public static class WindowsAutostart
         {
             using (RegistryKey run = Registry.CurrentUser.CreateSubKey(RunKey))
             {
-                run.SetValue(ValueName, $"\"{executablePath}\"", RegistryValueKind.String);
+                run.SetValue(ValueName, Command, RegistryValueKind.String);
             }
 
             ClearApproval();
