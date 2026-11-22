@@ -1,0 +1,47 @@
+name: Release
+
+# Pushing a tag such as v0.1.0 builds the MSIX (for the Microsoft Store) and the portable ZIP and
+# attaches both to a GitHub Release. The first Store submission is manual in Partner Center.
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+env:
+  DOTNET_NOLOGO: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+
+jobs:
+  release:
+    name: Build and publish release
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-dotnet@v5
+        with:
+          global-json-file: global.json
+      - name: Test
+        run: dotnet test --solution bogopali.slnx --configuration Release
+      - name: Build MSIX and ZIP
+        shell: pwsh
+        env:
+          # Set these repository variables to the Partner Center Product identity values.
+          MSIX_PACKAGE_NAME: ${{ vars.MSIX_PACKAGE_NAME }}
+          MSIX_PUBLISHER: ${{ vars.MSIX_PUBLISHER }}
+          MSIX_PUBLISHER_DISPLAY_NAME: ${{ vars.MSIX_PUBLISHER_DISPLAY_NAME }}
+        run: |
+          $version = '${{ github.ref_name }}'.TrimStart('v')
+          $arguments = @{ Version = $version }
+          if ($env:MSIX_PACKAGE_NAME) { $arguments.PackageName = $env:MSIX_PACKAGE_NAME }
+          if ($env:MSIX_PUBLISHER) { $arguments.Publisher = $env:MSIX_PUBLISHER }
+          if ($env:MSIX_PUBLISHER_DISPLAY_NAME) { $arguments.PublisherDisplayName = $env:MSIX_PUBLISHER_DISPLAY_NAME }
+          ./packaging/build-release.ps1 @arguments
+      - name: Create GitHub Release
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: >-
+          gh release create '${{ github.ref_name }}' (Get-ChildItem artifacts/release/*).FullName
+          --title 'bogopali ${{ github.ref_name }}' --generate-notes
