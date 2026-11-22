@@ -1,14 +1,18 @@
 <#
 .SYNOPSIS
-  Builds the release artifacts: an unsigned MSIX for the Microsoft Store and a portable ZIP.
+  Builds the release artifacts: an unsigned MSIX for the Microsoft Store, a portable ZIP and, when a
+  signing certificate is given, a signed MSIX for sideloading plus its public certificate.
 
 .DESCRIPTION
-  Both builds are self-contained, so no separate .NET installation is needed. The MSIX is unsigned:
-  the Store signs it on submission. To sideload it for testing, sign it first with a certificate whose
-  subject matches -Publisher (see README.md).
+  All builds are self-contained, so no separate .NET installation is needed. The Store MSIX is unsigned
+  because the Store signs it on submission. Windows only installs a signed MSIX, so sideloading needs
+  -CertificatePath: a .pfx whose subject equals -Publisher (packaging/new-signing-certificate.ps1 creates one).
 
 .EXAMPLE
   ./packaging/build-release.ps1 -Version 0.1.0
+
+.EXAMPLE
+  ./packaging/build-release.ps1 -Version 0.1.0 -CertificatePath bogopali-signing.pfx -CertificatePassword $password
 #>
 [CmdletBinding()]
 param(
@@ -26,6 +30,11 @@ param(
     [string] $Publisher = 'CN=bogopali',
 
     [string] $PublisherDisplayName = 'bogopali',
+
+    # Optional .pfx used to sign a sideload copy of the MSIX. Its subject must equal -Publisher.
+    [string] $CertificatePath,
+
+    [SecureString] $CertificatePassword,
 
     [string] $OutputDirectory = (Join-Path $PSScriptRoot '..' 'artifacts' 'release')
 )
@@ -102,6 +111,26 @@ if (-not $makeAppx) { throw 'makeappx.exe was not found. Install the Windows SDK
 $msix = Join-Path $OutputDirectory "bogopali-$Version-$runtime.msix"
 & $makeAppx.FullName pack /d $msixDir /p $msix /o
 if ($LASTEXITCODE -ne 0) { throw "makeappx failed with exit code $LASTEXITCODE." }
+
+if ($CertificatePath) {
+    $plainPassword = [System.Net.NetworkCredential]::new('', $CertificatePassword).Password
+    $flags = [System.Security.Cryptography.X509Certificates.X509KeyStorageFlags]::EphemeralKeySet
+    $certificate = [System.Security.Cryptography.X509Certificates.X509CertificateLoader]::LoadPkcs12FromFile(
+        (Resolve-Path $CertificatePath), $plainPassword, $flags)
+    if ($certificate.Subject -ne $Publisher) {
+        throw "The certificate subject '$($certificate.Subject)' must equal the publisher '$Publisher'."
+    }
+
+    $signTool = Join-Path $makeAppx.DirectoryName 'signtool.exe'
+    $sideload = Join-Path $OutputDirectory "bogopali-$Version-$runtime-sideload.msix"
+    Copy-Item $msix $sideload
+    & $signTool sign /fd SHA256 /f (Resolve-Path $CertificatePath) /p $plainPassword $sideload
+    if ($LASTEXITCODE -ne 0) { throw "signtool failed with exit code $LASTEXITCODE." }
+
+    # Testers import this public certificate into "Trusted People" once before installing the sideload MSIX.
+    [System.IO.File]::WriteAllBytes((Join-Path $OutputDirectory 'bogopali-signing.cer'), $certificate.Export('Cert'))
+    $certificate.Dispose()
+}
 
 Remove-Item $work -Recurse -Force
 Get-ChildItem $OutputDirectory | ForEach-Object { Write-Host "Built $($_.FullName)" }

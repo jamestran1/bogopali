@@ -58,7 +58,18 @@ Requires the .NET 11 SDK. See [AGENTS.md](AGENTS.md) for build and test commands
 
 ### Releasing
 
-Pushing a tag such as `v0.1.0` runs `.github/workflows/release.yml`, which builds an unsigned MSIX and the portable ZIP with `packaging/build-release.ps1` (PowerShell 7 and the Windows SDK) and attaches both to a GitHub Release.
+Pushing a tag such as `v0.1.0` on a commit that is on `main` runs `.github/workflows/release.yml` (tags elsewhere fail the run). It builds the artifacts with `packaging/build-release.ps1` (PowerShell 7 and the Windows SDK) and attaches them to a GitHub Release:
 
-- Before the first Store submission, reserve the app in Partner Center and set the repository variables `MSIX_PACKAGE_NAME`, `MSIX_PUBLISHER` and `MSIX_PUBLISHER_DISPLAY_NAME` to its Product identity values. The first submission is uploaded manually; the Store signs the package.
-- To sideload the MSIX for testing, sign it with a trusted certificate whose subject matches `MSIX_PUBLISHER`, for example with `signtool sign /fd SHA256 /f test.pfx bogopali-<version>-win-x64.msix`.
+| Artifact | For |
+| --- | --- |
+| `bogopali-<version>-win-x64.msix` | Microsoft Store upload (unsigned; the Store signs it) |
+| `bogopali-<version>-win-x64-sideload.msix` + `bogopali-signing.cer` | installing the MSIX directly, for testing |
+| `bogopali-<version>-win-x64.zip` | the portable build |
+
+One-time setup:
+
+1. Reserve the app in Partner Center and set the repository variables `MSIX_PACKAGE_NAME`, `MSIX_PUBLISHER` and `MSIX_PUBLISHER_DISPLAY_NAME` to its Product identity values. Without them the MSIX uses placeholder identity and the run shows a warning. The first submission is uploaded manually.
+2. The manifest declares English (`en-us`) and Vietnamese (`vi-vn`), so Partner Center asks for a Store listing in both languages.
+3. For the sideload MSIX, create a signing certificate whose subject equals `MSIX_PUBLISHER` with `packaging/new-signing-certificate.ps1`, then store it as the secrets `MSIX_SIGNING_CERTIFICATE` (base64 .pfx) and `MSIX_SIGNING_PASSWORD`. Without them no sideload MSIX is built.
+
+To install the sideload MSIX, a tester imports `bogopali-signing.cer` once into **Local Machine > Trusted People** (this step needs admin rights), then opens the `.msix`.
