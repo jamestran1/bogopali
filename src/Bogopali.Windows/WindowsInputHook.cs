@@ -20,6 +20,11 @@ public sealed unsafe class WindowsInputHook : IInputHook
     private nint _keyboardHook;
     private nint _mouseHook;
     private uint _swallowedHotkeyKey;
+
+    // Caps Lock is tracked here rather than read with GetKeyState on the hook thread, whose own key state
+    // need not follow the foreground application. Seeded at start, then flipped on every Caps Lock press.
+    private bool _capsLockOn;
+    private bool _capsLockHeld;
     private Exception? _startError;
 
     /// <inheritdoc/>
@@ -33,6 +38,7 @@ public sealed unsafe class WindowsInputHook : IInputHook
         }
 
         _hotkey = toggleHotkey;
+        _capsLockOn = (NativeMethods.GetKeyState(VirtualKeys.Capital) & 1) != 0;
         _handler = handler;
 
         using ManualResetEventSlim started = new();
@@ -163,6 +169,11 @@ public sealed unsafe class WindowsInputHook : IInputHook
         }
 
         uint key = data->VirtualKey;
+        if (key == VirtualKeys.Capital)
+        {
+            TrackCapsLock(message);
+        }
+
         if (message is NativeMethods.WmKeyUp or NativeMethods.WmSysKeyUp)
         {
             if (key == _swallowedHotkeyKey)
@@ -215,7 +226,7 @@ public sealed unsafe class WindowsInputHook : IInputHook
         }
         else
         {
-            char? character = Translate(key, data->ScanCode, held, layout);
+            char? character = Translate(key, data->ScanCode, held, _capsLockOn, layout);
 
             // Keys without a character (function keys, dead keys) reset the Input Buffer like editing keys.
             inputEvent = character is { } typed ? InputEvent.Typed(typed) : InputEvent.EditingKey;
@@ -287,7 +298,24 @@ public sealed unsafe class WindowsInputHook : IInputHook
 
     private static bool IsDown(int key) => (NativeMethods.GetAsyncKeyState(key) & 0x8000) != 0;
 
-    private static char? Translate(uint key, uint scanCode, HotkeyModifiers held, nint layout)
+    private void TrackCapsLock(uint message)
+    {
+        if (message is NativeMethods.WmKeyDown or NativeMethods.WmSysKeyDown)
+        {
+            // Auto-repeat sends more key-downs while the key is held; only the first one toggles.
+            if (!_capsLockHeld)
+            {
+                _capsLockOn = !_capsLockOn;
+                _capsLockHeld = true;
+            }
+        }
+        else
+        {
+            _capsLockHeld = false;
+        }
+    }
+
+    private static char? Translate(uint key, uint scanCode, HotkeyModifiers held, bool capsLockOn, nint layout)
     {
         byte* state = stackalloc byte[256];
         new Span<byte>(state, 256).Clear();
@@ -296,7 +324,7 @@ public sealed unsafe class WindowsInputHook : IInputHook
             state[VirtualKeys.Shift] = 0x80;
         }
 
-        if ((NativeMethods.GetKeyState(VirtualKeys.Capital) & 1) != 0)
+        if (capsLockOn)
         {
             state[VirtualKeys.Capital] = 0x01;
         }
