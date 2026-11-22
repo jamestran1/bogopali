@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Platform-neutral translation logic and ports. Must not reference any OS-specific API (ADR 0004). -->
+  <PropertyGroup>
+    <TargetFramework>net11.0</TargetFramework>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+  </PropertyGroup>
+
+</Project>

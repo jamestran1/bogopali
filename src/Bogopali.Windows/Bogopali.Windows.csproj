@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Windows adapter: implements the Core ports (keyboard hook, keystroke sender, autostart). -->
+  <PropertyGroup>
+    <TargetFramework>net11.0-windows</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Bogopali.Core\Bogopali.Core.csproj" />
+  </ItemGroup>
+
+</Project>
