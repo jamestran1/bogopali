@@ -1,8 +1,11 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-  <!-- Windows adapter: implements the Core ports (keyboard hook, keystroke sender, autostart). -->
+  <!-- Windows adapter: implements the Core ports (input hook, keystroke sender, autostart). -->
   <PropertyGroup>
-    <TargetFramework>net11.0-windows</TargetFramework>
+    <!-- The Windows SDK version gives access to the MSIX StartupTask API. -->
+    <TargetFramework>net11.0-windows10.0.19041.0</TargetFramework>
+    <SupportedOSPlatformVersion>10.0.17763.0</SupportedOSPlatformVersion>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
   <ItemGroup>

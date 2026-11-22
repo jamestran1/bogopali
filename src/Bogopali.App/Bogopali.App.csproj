@@ -3,10 +3,13 @@
   <!-- Avalonia tray application: wires the Windows adapter to the Core. -->
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net11.0-windows</TargetFramework>
+    <TargetFramework>net11.0-windows10.0.19041.0</TargetFramework>
+    <SupportedOSPlatformVersion>10.0.17763.0</SupportedOSPlatformVersion>
     <RootNamespace>Bogopali.App</RootNamespace>
     <AssemblyName>bogopali</AssemblyName>
+    <Product>bogopali</Product>
     <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
   </PropertyGroup>
 
   <ItemGroup>
