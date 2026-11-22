@@ -106,27 +106,36 @@ public sealed class ConfigStoreTests : IDisposable
     [Theory]
     [InlineData("toggle_hotkey = ")]
     [InlineData("[rules\naf = \"x\"")]
-    [InlineData("toggle_hotkey = \"Alt + `\"\ntoggle_hotkey = \"Alt + `\"")]
+    [InlineData("\ntoggle_hotkey = \"Alt + `\"\ntoggle_hotkey = \"Alt + `\"")]
     public void InvalidTomlFallsBackToDefaultsAndReportsTheError(string toml)
     {
         ConfigLoadResult result = LoadWith(toml);
 
         Assert.NotNull(result.Error);
+        Assert.Equal(ConfigErrorKind.InvalidToml, result.Error.Kind);
         Assert.Equal(Hotkey.Default, result.Config.ToggleHotkey);
         Assert.Equal("ā", Typed(result, "af"));
     }
 
     [Theory]
-    [InlineData("toggle_hotkey = \"Hyper + p\"")]
-    [InlineData("toggle_hotkey = 5")]
-    [InlineData("rules = \"af\"")]
-    [InlineData("[rules]\naf = 1")]
-    [InlineData("[rules]\nAF = \"x\"\naf = \"y\"")]
-    public void InvalidValuesFallBackToDefaultsAndReportTheError(string toml)
+    [InlineData("[rules\naf = \"x\"", 1)]
+    [InlineData("\ntoggle_hotkey = \"Alt + `\"\ntoggle_hotkey = \"Alt + `\"", 3)]
+    public void InvalidTomlReportsTheLine(string toml, int line) =>
+        Assert.Equal(line, LoadWith(toml).Error?.Line);
+
+    [Theory]
+    [InlineData("toggle_hotkey = \"Hyper + p\"", ConfigErrorKind.InvalidToggleHotkey, "Hyper + p")]
+    [InlineData("toggle_hotkey = 5", ConfigErrorKind.InvalidToggleHotkey, "5")]
+    [InlineData("rules = \"af\"", ConfigErrorKind.RulesNotATable, null)]
+    [InlineData("[rules]\naf = 1", ConfigErrorKind.InvalidRule, "af")]
+    [InlineData("[rules]\nAF = \"x\"\naf = \"y\"", ConfigErrorKind.DuplicateRule, "af")]
+    public void InvalidValuesFallBackToDefaultsAndReportTheError(string toml, ConfigErrorKind kind, string? subject)
     {
         ConfigLoadResult result = LoadWith(toml);
 
         Assert.NotNull(result.Error);
+        Assert.Equal(kind, result.Error.Kind);
+        Assert.Equal(subject, result.Error.Subject);
         Assert.Equal(Hotkey.Default, result.Config.ToggleHotkey);
         Assert.Equal(TelexRuleSet.Default.Count, result.Config.Rules.Count);
     }

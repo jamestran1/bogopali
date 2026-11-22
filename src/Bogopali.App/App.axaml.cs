@@ -72,7 +72,9 @@ internal sealed partial class App : Application, IDisposable
 
         if (loaded.Error is not null)
         {
-            MessageWindow.ShowMessage(_strings.ConfigurationError, $"{_configPath}\n{loaded.Error}", _strings.Ok);
+            // The technical detail is untranslated, so it goes to the trace and the user sees a localized description.
+            Trace.TraceWarning($"bogopali configuration: {loaded.Error.TechnicalDetail}");
+            MessageWindow.ShowMessage(_strings.ConfigurationError, _strings.Describe(loaded.Error, _configPath), _strings.Ok);
         }
 
         _ = RefreshAutostartAsync();
@@ -139,7 +141,8 @@ internal sealed partial class App : Application, IDisposable
         }
         catch (Exception exception) when (exception is not OutOfMemoryException)
         {
-            MessageWindow.ShowMessage(_strings.StartupFailed, exception.Message, _strings.Ok);
+            Trace.TraceError($"bogopali autostart: {exception}");
+            MessageWindow.ShowMessage(_strings.StartupFailed, null, _strings.Ok);
         }
     }
 
@@ -173,7 +176,9 @@ internal sealed partial class App : Application, IDisposable
         }
         catch (Exception exception) when (exception is Win32Exception or IOException or UnauthorizedAccessException)
         {
-            MessageWindow.ShowMessage(_strings.OpenConfigurationFailed, exception.Message, _strings.Ok);
+            Trace.TraceError($"bogopali open configuration: {exception}");
+            MessageWindow.ShowMessage(_strings.OpenConfigurationFailed, _strings.Describe(
+                new ConfigError(ConfigErrorKind.FileUnreadable, null, null, exception.Message), _configPath), _strings.Ok);
         }
     }
 }
