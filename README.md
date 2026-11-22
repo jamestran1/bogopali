@@ -1,6 +1,6 @@
-# bogopali
+# Pāli Key
 
-A small background utility for Windows that lets you type Romanized Pāli with diacritics (ā ī ū ṭ ḍ ṇ ñ ṅ ḷ ṃ) in any application: Word, browsers, Notepad, chat apps.
+Pāli Key (repository and executable name: `bogopali`) is a small background utility for Windows that lets you type Romanized Pāli with diacritics (ā ī ū ṭ ḍ ṇ ñ ṅ ḷ ṃ) in any application: Word, browsers, Notepad, chat apps.
 
 Type the letter, then `f` for the diacritic.
 
@@ -25,22 +25,22 @@ The tray menu (right click) offers **Pāli Mode**, **Start with Windows**, **Ope
 
 ### Microsoft Store (recommended)
 
-Install bogopali from the Microsoft Store. It needs no admin rights and updates automatically.
+Install Pāli Key from the Microsoft Store. It needs no admin rights and updates automatically.
 
 ### Portable ZIP
 
-1. Download `bogopali-<version>-win-x64.zip` from [GitHub Releases](https://github.com/jamestran1/bogopali/releases).
+1. Download `pali-key-<version>-win-x64.zip` from [GitHub Releases](https://github.com/jamestran1/bogopali/releases).
 2. Extract it anywhere you can write to, for example your Documents folder, and run `bogopali.exe`. No installation or admin rights are needed.
 
 The ZIP build is not code-signed, so Windows SmartScreen may say *"Windows protected your PC"* the first time. This is expected: choose **More info**, then **Run anyway**.
 
-## Using bogopali with UniKey or EVKey
+## Using Pāli Key with UniKey or EVKey
 
-Vietnamese input tools also capture the keyboard, and two tools rewriting the same keystrokes conflict (a Hook Conflict). While typing Pāli, switch UniKey or EVKey to English mode (usually `Ctrl + Shift` or `Alt + Z`). Switch bogopali to Bypass Mode when you go back to typing Vietnamese.
+Vietnamese input tools also capture the keyboard, and two tools rewriting the same keystrokes conflict (a Hook Conflict). While typing Pāli, switch UniKey or EVKey to English mode (usually `Ctrl + Shift` or `Alt + Z`). Switch Pāli Key to Bypass Mode when you go back to typing Vietnamese.
 
 ## Configuration
 
-On first start bogopali writes `config.toml` to `%LOCALAPPDATA%\bogopali` (the Store build keeps it in its own app data folder). Choose **Open configuration file** in the tray menu to edit it; changes apply the next time bogopali starts.
+On first start Pāli Key writes `config.toml` to `%LOCALAPPDATA%\bogopali` (the Store build keeps it in its own app data folder). Choose **Open configuration file** in the tray menu to edit it; changes apply the next time Pāli Key starts.
 
 ```toml
 toggle_hotkey = "Ctrl + Alt + p"   # e.g. "Alt + `", "Ctrl + +", "Ctrl + F12"
@@ -50,7 +50,7 @@ sf = "ṣ"   # add a rule
 aa = ""    # disable a default rule
 ```
 
-Rules are merged over the defaults and the longest matching sequence wins. If the file cannot be read, bogopali tells you and runs with the defaults.
+Rules are merged over the defaults and the longest matching sequence wins. If the file cannot be read, Pāli Key tells you and runs with the defaults.
 
 ## Development
 
@@ -62,9 +62,9 @@ Pushing a tag such as `v0.1.0` on a commit that is on `main` runs `.github/workf
 
 | Artifact | For |
 | --- | --- |
-| `bogopali-<version>-win-x64.msix` | Microsoft Store upload (unsigned; the Store signs it) |
-| `bogopali-<version>-win-x64-sideload.msix` + `bogopali-signing.cer` | installing the MSIX directly, for testing |
-| `bogopali-<version>-win-x64.zip` | the portable build |
+| `pali-key-<version>-win-x64.msix` | Microsoft Store upload (unsigned; the Store signs it) |
+| `pali-key-<version>-win-x64-sideload.msix` + `pali-key-signing.cer` | installing the MSIX directly, for testing |
+| `pali-key-<version>-win-x64.zip` | the portable build |
 
 One-time setup:
 
@@ -72,4 +72,4 @@ One-time setup:
 2. The manifest declares English (`en-us`) and Vietnamese (`vi-vn`), so Partner Center asks for a Store listing in both languages.
 3. For the sideload MSIX, create a signing certificate whose subject equals `MSIX_PUBLISHER` with `packaging/new-signing-certificate.ps1`, then store it as the secrets `MSIX_SIGNING_CERTIFICATE` (base64 .pfx) and `MSIX_SIGNING_PASSWORD`. Without them no sideload MSIX is built.
 
-To install the sideload MSIX, a tester imports `bogopali-signing.cer` once into **Local Machine > Trusted People** (this step needs admin rights), then opens the `.msix`.
+To install the sideload MSIX, a tester imports `pali-key-signing.cer` once into **Local Machine > Trusted People** (this step needs admin rights), then opens the `.msix`.

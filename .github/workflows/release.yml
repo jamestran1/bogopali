@@ -68,4 +68,4 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: >-
           gh release create '${{ github.ref_name }}' (Get-ChildItem artifacts/release/*).FullName
-          --title 'bogopali ${{ github.ref_name }}' --generate-notes
+          --title 'Pāli Key ${{ github.ref_name }}' --generate-notes

@@ -32,8 +32,8 @@ internal sealed record Strings(
         OpenConfigurationFile: "Open configuration file",
         Exit: "Exit",
         Ok: "OK",
-        ConfigurationError: "The configuration file could not be read, so bogopali is using the default settings.",
-        StartupDisabledByUser: "Starting with Windows was turned off in Windows Settings. To turn it back on, open Settings > Apps > Startup and switch bogopali on.",
+        ConfigurationError: "The configuration file could not be read, so Pāli Key is using the default settings.",
+        StartupDisabledByUser: "Starting with Windows was turned off in Windows Settings. To turn it back on, open Settings > Apps > Startup and switch Pāli Key on.",
         StartupDisabledByPolicy: "Starting with Windows is controlled by your organization's policy.",
         StartupFailed: "The Start with Windows setting could not be changed.",
         OpenConfigurationFailed: "The configuration file could not be opened.",
@@ -53,8 +53,8 @@ internal sealed record Strings(
         OpenConfigurationFile: "Mở tệp cấu hình",
         Exit: "Thoát",
         Ok: "Đồng ý",
-        ConfigurationError: "Không đọc được tệp cấu hình, nên bogopali đang dùng cấu hình mặc định.",
-        StartupDisabledByUser: "Tính năng khởi động cùng Windows đã bị tắt trong Cài đặt Windows. Để bật lại, hãy mở Cài đặt > Ứng dụng > Khởi động và bật bogopali.",
+        ConfigurationError: "Không đọc được tệp cấu hình, nên Pāli Key đang dùng cấu hình mặc định.",
+        StartupDisabledByUser: "Tính năng khởi động cùng Windows đã bị tắt trong Cài đặt Windows. Để bật lại, hãy mở Cài đặt > Ứng dụng > Khởi động và bật Pāli Key.",
         StartupDisabledByPolicy: "Tính năng khởi động cùng Windows do chính sách của tổ chức quản lý.",
         StartupFailed: "Không thay đổi được tùy chọn khởi động cùng Windows.",
         OpenConfigurationFailed: "Không mở được tệp cấu hình.",
@@ -72,7 +72,7 @@ internal sealed record Strings(
 
     public string ModeName(InputMode mode) => mode == InputMode.Pali ? PaliMode : BypassMode;
 
-    public string ToolTip(InputMode mode) => $"bogopali: {ModeName(mode)}";
+    public string ToolTip(InputMode mode) => $"Pāli Key: {ModeName(mode)}";
 
     /// <summary>Describes a configuration problem in this language, followed by the file path.</summary>
     public string Describe(ConfigError error, string filePath)

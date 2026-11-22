@@ -12,7 +12,7 @@
   ./packaging/build-release.ps1 -Version 0.1.0
 
 .EXAMPLE
-  ./packaging/build-release.ps1 -Version 0.1.0 -CertificatePath bogopali-signing.pfx -CertificatePassword $password
+  ./packaging/build-release.ps1 -Version 0.1.0 -CertificatePath pali-key-signing.pfx -CertificatePassword $password
 #>
 [CmdletBinding()]
 param(
@@ -59,7 +59,7 @@ function Invoke-Publish([string] $Destination, [string[]] $Extra) {
 # Portable ZIP: a single executable that runs without installation or admin rights.
 $zipDir = Join-Path $work 'zip'
 Invoke-Publish $zipDir @('-p:PublishSingleFile=true', '-p:IncludeNativeLibrariesForSelfExtract=true', '-p:EnableCompressionInSingleFile=true', '-p:DebugType=none')
-$zip = Join-Path $OutputDirectory "bogopali-$Version-$runtime.zip"
+$zip = Join-Path $OutputDirectory "pali-key-$Version-$runtime.zip"
 Compress-Archive -Path (Join-Path $zipDir 'bogopali.exe') -DestinationPath $zip
 
 # MSIX: the published folder plus the manifest and logos.
@@ -108,7 +108,7 @@ $makeAppx = Get-ChildItem "${env:ProgramFiles(x86)}\Windows Kits\10\bin\*\x64\ma
     Sort-Object FullName -Descending | Select-Object -First 1
 if (-not $makeAppx) { throw 'makeappx.exe was not found. Install the Windows SDK.' }
 
-$msix = Join-Path $OutputDirectory "bogopali-$Version-$runtime.msix"
+$msix = Join-Path $OutputDirectory "pali-key-$Version-$runtime.msix"
 & $makeAppx.FullName pack /d $msixDir /p $msix /o
 if ($LASTEXITCODE -ne 0) { throw "makeappx failed with exit code $LASTEXITCODE." }
 
@@ -122,13 +122,13 @@ if ($CertificatePath) {
     }
 
     $signTool = Join-Path $makeAppx.DirectoryName 'signtool.exe'
-    $sideload = Join-Path $OutputDirectory "bogopali-$Version-$runtime-sideload.msix"
+    $sideload = Join-Path $OutputDirectory "pali-key-$Version-$runtime-sideload.msix"
     Copy-Item $msix $sideload
     & $signTool sign /fd SHA256 /f (Resolve-Path $CertificatePath) /p $plainPassword $sideload
     if ($LASTEXITCODE -ne 0) { throw "signtool failed with exit code $LASTEXITCODE." }
 
     # Testers import this public certificate into "Trusted People" once before installing the sideload MSIX.
-    [System.IO.File]::WriteAllBytes((Join-Path $OutputDirectory 'bogopali-signing.cer'), $certificate.Export('Cert'))
+    [System.IO.File]::WriteAllBytes((Join-Path $OutputDirectory 'pali-key-signing.cer'), $certificate.Export('Cert'))
     $certificate.Dispose()
 }
 

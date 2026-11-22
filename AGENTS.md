@@ -1,4 +1,4 @@
-# bogopali
+# bogopali (Pāli Key)
 
 Lightweight background utility for Windows (macOS later) that turns Telex-style
 sequences into Romanized Pāli with diacritics. See `GLOSSARY.md` for the domain

@@ -114,7 +114,7 @@ public sealed class ConfigStore(string directory)
     {
         StringBuilder builder = new();
         _ = builder
-            .AppendLine("# bogopali configuration. Changes apply the next time bogopali starts.")
+            .AppendLine("# Pāli Key configuration. Changes apply the next time Pāli Key starts.")
             .AppendLine()
             .AppendLine("# Key combination that switches between Pali Mode and Bypass Mode,")
             .AppendLine("# e.g. \"Alt + `\", \"Ctrl + Alt + p\", \"Ctrl + +\" or \"Ctrl + F12\".")
