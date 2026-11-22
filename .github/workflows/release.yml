@@ -1,0 +1,71 @@
+name: Release
+
+# Pushing a tag such as v0.1.0 builds the MSIX (for the Microsoft Store) and the portable ZIP and
+# attaches both to a GitHub Release. The first Store submission is manual in Partner Center.
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+env:
+  DOTNET_NOLOGO: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+
+jobs:
+  release:
+    name: Build and publish release
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+      - name: Check the tag is on main
+        shell: bash
+        run: |
+          if ! git merge-base --is-ancestor "$GITHUB_SHA" origin/main; then
+            echo "::error::Tag $GITHUB_REF_NAME points at a commit that is not on main; release only from main."
+            exit 1
+          fi
+      - uses: actions/setup-dotnet@v5
+        with:
+          global-json-file: global.json
+      - name: Test
+        run: dotnet test --solution bogopali.slnx --configuration Release
+      - name: Build MSIX and ZIP
+        shell: pwsh
+        env:
+          # Set these repository variables to the Partner Center Product identity values.
+          MSIX_PACKAGE_NAME: ${{ vars.MSIX_PACKAGE_NAME }}
+          MSIX_PUBLISHER: ${{ vars.MSIX_PUBLISHER }}
+          MSIX_PUBLISHER_DISPLAY_NAME: ${{ vars.MSIX_PUBLISHER_DISPLAY_NAME }}
+          # Optional: base64 .pfx and its password (packaging/new-signing-certificate.ps1) for a sideload MSIX.
+          MSIX_SIGNING_CERTIFICATE: ${{ secrets.MSIX_SIGNING_CERTIFICATE }}
+          MSIX_SIGNING_PASSWORD: ${{ secrets.MSIX_SIGNING_PASSWORD }}
+        run: |
+          $version = '${{ github.ref_name }}'.TrimStart('v')
+          $arguments = @{ Version = $version }
+          if ($env:MSIX_PACKAGE_NAME) { $arguments.PackageName = $env:MSIX_PACKAGE_NAME }
+          if ($env:MSIX_PUBLISHER) { $arguments.Publisher = $env:MSIX_PUBLISHER }
+          if ($env:MSIX_PUBLISHER_DISPLAY_NAME) { $arguments.PublisherDisplayName = $env:MSIX_PUBLISHER_DISPLAY_NAME }
+          if (-not $env:MSIX_PACKAGE_NAME -or -not $env:MSIX_PUBLISHER) {
+            Write-Host '::warning::MSIX_PACKAGE_NAME or MSIX_PUBLISHER is not set; the MSIX uses placeholder identity and cannot be submitted to the Store.'
+          }
+          if ($env:MSIX_SIGNING_CERTIFICATE) {
+            $pfx = Join-Path $env:RUNNER_TEMP 'signing.pfx'
+            [IO.File]::WriteAllBytes($pfx, [Convert]::FromBase64String($env:MSIX_SIGNING_CERTIFICATE))
+            $arguments.CertificatePath = $pfx
+            $arguments.CertificatePassword = ConvertTo-SecureString $env:MSIX_SIGNING_PASSWORD -AsPlainText -Force
+          } else {
+            Write-Host '::warning::MSIX_SIGNING_CERTIFICATE is not set; no sideload MSIX is built.'
+          }
+          try { ./packaging/build-release.ps1 @arguments }
+          finally { if ($pfx -and (Test-Path $pfx)) { Remove-Item $pfx -Force } }
+      - name: Create GitHub Release
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: >-
+          gh release create '${{ github.ref_name }}' (Get-ChildItem artifacts/release/*).FullName
+          --title 'bogopali ${{ github.ref_name }}' --generate-notes
