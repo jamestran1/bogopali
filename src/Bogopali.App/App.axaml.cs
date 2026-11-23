@@ -13,14 +13,18 @@ namespace Bogopali.App;
 
 internal sealed partial class App : Application, IDisposable
 {
-    private readonly Strings _strings = Strings.For(CultureInfo.CurrentUICulture);
     private readonly IAutostart _autostart = WindowsAutostart.Create();
     private TranslationSession? _session;
     private WindowsInputHook? _hook;
     private TrayIcon? _tray;
     private NativeMenuItem? _modeItem;
     private NativeMenuItem? _autostartItem;
+    private static readonly TimeSpan s_autostartPollInterval = TimeSpan.FromSeconds(3);
+
+    private readonly Strings _strings = Strings.For(CultureInfo.CurrentUICulture);
     private string _configPath = string.Empty;
+    private DispatcherTimer? _autostartPoll;
+    private bool _refreshingAutostart;
 
     public override void Initialize() => AvaloniaXamlLoader.Load(this);
 
@@ -60,6 +64,12 @@ internal sealed partial class App : Application, IDisposable
         NativeMenu menu = [_modeItem, _autostartItem, openConfigItem, new NativeMenuItemSeparator(), exitItem];
         menu.Opening += async (_, _) => await RefreshAutostartAsync().ConfigureAwait(true);
 
+        // The Windows tray menu does not raise Opening, so the check would keep its old state after the user
+        // turns startup off in Windows Settings. Re-read the state periodically instead.
+        _autostartPoll = new DispatcherTimer { Interval = s_autostartPollInterval };
+        _autostartPoll.Tick += async (_, _) => await RefreshAutostartAsync().ConfigureAwait(true);
+        _autostartPoll.Start();
+
         _tray = new TrayIcon { Menu = menu, IsVisible = true };
         _tray.Clicked += (_, _) => _session.ToggleMode();
         TrayIcon.SetIcons(this, [_tray]);
@@ -82,6 +92,8 @@ internal sealed partial class App : Application, IDisposable
 
     private void Stop()
     {
+        _autostartPoll?.Stop();
+        _autostartPoll = null;
         _hook?.Dispose();
         _hook = null;
         if (_tray is not null)
@@ -106,6 +118,13 @@ internal sealed partial class App : Application, IDisposable
 
     private async Task RefreshAutostartAsync()
     {
+        // A slow StartupTask query must not stack up behind the next timer tick.
+        if (_refreshingAutostart)
+        {
+            return;
+        }
+
+        _refreshingAutostart = true;
         try
         {
             AutostartState state = await _autostart.GetStateAsync().ConfigureAwait(true);
@@ -114,6 +133,10 @@ internal sealed partial class App : Application, IDisposable
         catch (Exception exception) when (exception is not OutOfMemoryException)
         {
             Trace.TraceError($"bogopali autostart: {exception}");
+        }
+        finally
+        {
+            _refreshingAutostart = false;
         }
     }
 
