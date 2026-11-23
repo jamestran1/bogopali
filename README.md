@@ -52,6 +52,10 @@ aa = ""    # disable a default rule
 
 Rules are merged over the defaults and the longest matching sequence wins. If the file cannot be read, Pāli Key tells you and runs with the defaults.
 
+## Privacy
+
+Pāli Key reads your keystrokes only to rewrite them as you type. It stores nothing you type and sends nothing over the network. See [PRIVACY.md](PRIVACY.md).
+
 ## Development
 
 Requires the .NET 11 SDK. See [AGENTS.md](AGENTS.md) for build and test commands, [GLOSSARY.md](GLOSSARY.md) for the domain language and [docs/adr](docs/adr) for the architectural decisions. The specification is issue [#9](https://github.com/jamestran1/bogopali/issues/9).
